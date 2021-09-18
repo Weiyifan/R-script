@@ -3,14 +3,16 @@ args<-commandArgs(TRUE)
 res=read.table(args[1],header=F,row.names=1,sep="\t")
 
 library("edgeR")
-group=c(1,1,2,2)
+group=c(1,1,2,2)#no replicates(1,2,3,4,5...)
 y=DGEList(counts=res, group=group)
 keep <- rowSums(cpm(y)>1) >= 2
 y <- y[keep, , keep.lib.sizes=TRUE]
 y <- calcNormFactors(y)
 design <- model.matrix(~group)
-y <- estimateDisp(y,design)
+y <- estimateDisp(y,design)# with replicates
+#y <- exactTest(y, dispersion=bcv^2)# with no replicates
 ye<- exactTest(y)
+#ye<- exactTest(y)
 #ou=topTags(ye,n=nrow(keep))
 out=ye$table
 
