@@ -1,0 +1,21 @@
+library(biomaRt)
+library(seurat)
+ensembl <- useMart("ensembl", dataset="hsapiens_gene_ensembl")
+for(i in 1:20){
+  print(i)
+  countsdata<-read.delim(file = paste(infotable$SampleName[i],"gz",sep="."), header = TRUE, sep = ",",row.names = 1)
+  bm <- getBM(attributes=c("ensembl_gene_id", "hgnc_symbol"), values=rownames(countsdata), mart=ensembl)
+  hgnc.symbols <- bm$hgnc_symbol[match(rownames(countsdata), bm$ensembl_gene_id)]
+  countsdata$symbol=hgnc.symbols
+  countsdata=aggregate(.~symbol, countsdata, sum, na.rm = TRUE, na.action=NULL)
+  countsdata=subset(countsdata,symbol!="")
+  row.names(countsdata)=countsdata$symbol
+  countsdata$symbol=NULL
+  mca <- CreateSeuratObject(counts = countsdata, min.cells = 0, min.features = 0)
+  mca$cell.type=infotable$cell.type[i]
+  mca$group=infotable$group[i]
+  mca$sampleTitle=infotable$sampleTitle[i]
+  save(mca,file=paste(infotable$SampleName[i],"Rdata",sep="."))
+  mylist=append(mylist,mca)
+}
+mca <- merge(mylist[[1]], y = mylist[2:20], add.cell.ids =as.vector(infotable$SampleName[1:20]), project = "12345678")
