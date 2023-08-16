@@ -1,0 +1,2 @@
+mca@assays$RNA@scale.data <- as.matrix(0)
+mca_mnn <- RunFastMNN(object.list = SplitObject(mca, split.by = "sample"))
