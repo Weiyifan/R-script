@@ -1,0 +1,17 @@
+mca.list <- SplitObject(mca, split.by = "sample")
+mca.list <- lapply(X = mca.list, FUN = function(x) {
+  x <- NormalizeData(x, verbose = FALSE)
+  x <- FindVariableFeatures(x, nfeatures = 1000,verbose = FALSE,)
+})
+features <- SelectIntegrationFeatures(object.list = mca.list)
+mca.list <- lapply(X = mca.list, FUN = function(x) {
+  x <- ScaleData(x, features = features, verbose = FALSE)
+  x <- RunPCA(x, features = features, verbose = FALSE)
+})
+anchors <- FindIntegrationAnchors(object.list = mca.list, reference = c(1, 2), reduction = "rpca",dims = 1:50)
+mca.integrated <- IntegrateData(anchorset = anchors, dims = 1:50)
+mca.integrated <- ScaleData(mca.integrated, verbose = FALSE)
+mca.integrated <- RunPCA(mca.integrated, verbose = FALSE)
+mca.integrated <- RunUMAP(mca.integrated, dims = 1:10)
+mca.integrated=FindNeighbors(mca.integrated,reduction = "pca")
+mca.integrated=FindClusters(mca.integrated,resolution=0.4)
