@@ -1,0 +1,1 @@
+VlnPlot(subFibro,features = c("CDH11"),split.by = "seurat_clusters",ncol = 1,group.by = 'disease.status')+scale_fill_manual(values = brewer.pal(11,name = "Paired"))
