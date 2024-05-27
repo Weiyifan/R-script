@@ -11,15 +11,21 @@ y <- calcNormFactors(y)
 design <- model.matrix(~group)
 y <- estimateDisp(y,design)# with replicates
 #y <- exactTest(y, dispersion=bcv^2)# with no replicates
-ye<- exactTest(y)
-#ye<- exactTest(y)
+
+#ye<- exactTest(y) # No FDR yet
+#out_noedgeR=topTags(ye,n=nrow(ye$table))$table # No FDR yet
+
+fit <- glmQLFit(y, design, robust=TRUE)
+fit <- glmFit(y, design)
+lrt <- glmLRT(fit)
+
 #ou=topTags(ye,n=nrow(keep))
-out=ye$table
+out=topTags(lrt,n=nrow(lrt$table))$table
 
 
 library("ggplot2")
 
-out$sig=ifelse(out$PValue < 0.05 & abs(out$logFC) > 1, "significant","Non-sig")
+out$sig=ifelse(out$FDR < 0.05 & abs(out$logFC) > 1, "significant","Non-sig")
 outsig=out[which(out$sig=="significant"),]
 write.table(outsig,file=args[2],sep="\t",quote=FALSE)
 p<-ggplot(out,aes(logFC,-log10(PValue),colour=sig))+geom_point(size=0.65,alpha=0.5)
